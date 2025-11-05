@@ -29,7 +29,11 @@ const funcoes = {
     const observacoes = baseConsolidada[observacao.lembreteId]['observacoes'] || []
     observacoes.push(observacao)
     baseConsolidada[observacao.lembreteId]['observacoes'] = observacoes
-
+  },
+  ObservacaoAtualizada: (observacao) => {
+    const observacoes = baseConsolidada[observacao.lembreteId]['observacoes']
+    const indice = observacoes.findIndex(o => o.id === observacao.id)
+    observacoes[indice] = observacao
   }
 }
 
@@ -49,8 +53,6 @@ app.post('/eventos', (req, res) => {
     // const type = evento.type
     // const payload = evento.payload
     const { type, payload } = evento
-    console.log(`type: ${type}`)
-    console.log(`payload: ${payload}`)
     //acessar o mapa de funções na posição type e chamar a função resultante entregando a ela, como parametro, o payload
     funcoes[type](payload)
   }
