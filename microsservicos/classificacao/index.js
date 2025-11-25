@@ -16,6 +16,18 @@ const funcoes = {
       type: 'ObservacaoClassificada',
       payload: observacao
     })
+  },
+
+  LembreteCriado: (lembrete) => {
+    if(lembrete.texto.length >=50)
+      lembrete.status = 'importante'
+    else
+      lembrete.status = 'comum'
+
+    axios.post('http://localhost:10000/eventos',{
+      type: 'LembreteCriado',
+      payload: lembrete
+    })
   }
 }
 
@@ -33,12 +45,25 @@ app.post('/eventos', (req, res) => {
 const port = 7000
 app.listen(port, () => {
   console.log(`Classificação. Porta ${port}.`)
-  axios.get('http://localhost:10000/eventos').then(({data: eventos}) => {
-    for(let evento of eventos){
-      try{
-        funcoes[evento.type](evento.payload)
+
+  axios.post('http://localhost:10000/registrar',{
+    type: 'ObservacaoCriada',
+    url: `http://localhost:${port}/eventos`
+   }).catch((e)=>{})
+  })
+
+ axios.post('http://localhost:10000/registrar',{
+   type: 'LembreteCriado', 
+   url: `http://localhost:${port}/eventos` 
+  }).catch((e)=>{})
+
+ axios.get('http://localhost:10000/eventos').then(({data: eventos}) => {
+    for (let tipo in eventos) {
+      const lista = eventos[tipo]
+      for (let evento of lista) {
+        try {
+          funcoes[evento.type](evento.payload)
+        } catch (e) {}
       }
-      catch(e){}
     }
   })
-})
