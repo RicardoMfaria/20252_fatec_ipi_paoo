@@ -1,43 +1,44 @@
-//se o import não funcionar
-// const express = require('express')
-// const axios = require('axios')
-import express from 'express'
-import axios from 'axios'
+const express = require('express')
+const axios = require('axios')
+
 const app = express()
 app.use(express.json())
 
-const eventos = []
+const eventos = {}
 
-//POST /eventos
-app.post('/eventos', async (req, res) => {
+const assinantes = {}
+
+app.post('/registrar', (req, res) => {
+  const { url, tipo } = req.body
+  if (!assinantes[tipo]) { assinantes[tipo] = [] }
+  if (!assinantes[tipo].includes(url)) { assinantes[tipo].push(url) }
+  console.log(`[Barramento] Registrado: ${url} quer ouvir ${tipo}`)
+  res.status(200).send({ msg: 'ok' })
+})
+
+app.post('/eventos', (req, res) => {
   const evento = req.body
-  eventos.push(evento)
-  console.log(evento)
-  try{
-    await axios.post('http://localhost:4000/eventos', evento)
-  }
-  catch(e){}
-  try{
-    await axios.post('http://localhost:5000/eventos', evento)
-  }
-  catch(e){}
-  try{
-    await axios.post('http://localhost:6000/eventos', evento)
-  }
-  catch(e){}
-  try{
-    await axios.post('http://localhost:7000/eventos', evento)
-  }
-  catch(e){}
+  const { type } = evento
+  console.log(`[Barramento] Recebido: ${type}`)
+
+  if (!eventos[type]) { eventos[type] = [] }
+  eventos[type].push(evento)
+
+  const interessados = assinantes[type] || []
+  interessados.forEach(async (url) => {
+    try {
+      await axios.post(url, evento)
+    } catch (e) {
+       
+    }
+  })
+  
   res.end()
 })
 
-
-//viabilizar a obtenção da base de eventos
 app.get('/eventos', (req, res) => {
-  res.json(eventos)
+  res.send(eventos)
 })
-
 
 const port = 10000
 app.listen(port, () => {

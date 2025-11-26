@@ -4,21 +4,6 @@ const { v4: uuidv4 } = require('uuid')
 const app = express()
 app.use(express.json())
 
-
-/*
-{
-  1: [
-    {id: 100, texto: 'comprar acucar', lembreteId: 1}
-  ],
-  2: [
-    {id: 1000, texto: 'qq coisa', lembreteId: 2}, 
-    {id: 1001, texto: 'outra coisa', lembreteId: 2}
-  ],
-  3: [
-    
-  ]
-}
-  */
 const observacoesPorLembrete = {}
 const funcoes = {
   ObservacaoClassificada: (observacao) => {
@@ -69,5 +54,7 @@ app.post('/eventos', (req, res) => {
 
 const port = 5000
 app.listen(port, () => console.log(`Observações. Porta ${port}.`))
-
-
+axios.post('http://localhost:10000/registrar', {
+        tipo: 'ObservacaoClassificada',
+        url: `http://localhost:${port}/eventos`
+    }).catch((e) => {})

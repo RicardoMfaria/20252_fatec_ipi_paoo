@@ -1,6 +1,6 @@
-import express from 'express'
-import axios from 'axios'
-import { v4 as uuidv4 } from 'uuid'
+const express = require('express')
+const axios = require('axios')
+const { v4: uuidv4 } = require('uuid')
 
 const app = express()
 app.use(express.json())
@@ -41,10 +41,24 @@ app.listen(port, async () => {
   for (let tipo of eventos) {
     try {
       await axios.post('http://localhost:10000/registrar', {
-        type: tipo,
+        tipo: tipo,
         url: `http://localhost:${port}/eventos`
       })
     } catch (e) { }
   }
   console.log("Registrado no barramento.")
+  try {
+    const resp = await axios.get('http://localhost:10000/eventos')
+    const dados = resp.data
+    for (let tipo in dados) {
+        for (let evento of dados[tipo]) {
+            logs.push({
+                id: uuidv4(),
+                data: new Date(),
+                tipo_evento: evento.type,
+                dados: evento.payload
+            })
+        }
+    }
+  } catch(e) {}
 })
